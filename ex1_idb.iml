@@ -33,5 +33,7 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" name="junit.jupiter.engine" level="application" />
+    <orderEntry type="library" name="junit.jupiter.api" level="application" />
   </component>
 </module>

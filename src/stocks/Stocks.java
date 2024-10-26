@@ -8,12 +8,21 @@ import java.nio.ByteBuffer;
 import java.util.*;
 
 public class Stocks implements Iterable<StockEntry> {
-
+    private List<StockEntry> stockList;
     private final RandomAccessFile file;
 
     Stocks(String path) throws FileNotFoundException {
         // TODO
-        file = null;
+        stockList = new ArrayList<>();
+
+        try {
+            file = new RandomAccessFile(path, "r");
+
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
     public StockEntry get(int i) {
