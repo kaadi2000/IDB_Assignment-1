@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.util.*;
 
 public class Stocks implements Iterable<StockEntry> {
@@ -16,7 +17,12 @@ public class Stocks implements Iterable<StockEntry> {
 
         try {
             file = new RandomAccessFile(path, "r");
-            ByteBuffer buffer = ByteBuffer.allocate((int) file.length());
+            FileChannel channel = file.getChannel();
+            final int channelSize = (int) channel.size();
+            ByteBuffer buffer = ByteBuffer.allocate(channelSize);
+            channel.read(buffer);
+            buffer.flip();
+
             while(buffer.remaining() > 0) {
                 stockEntries.add(new StockEntry(buffer));
             }
