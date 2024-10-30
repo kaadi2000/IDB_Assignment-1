@@ -52,17 +52,18 @@ public class MapContainer<Value> implements Container<Long, Value> {
 	@Override
 	public Value get(Long key) throws NoSuchElementException {
 		// TODO
-		if (!map.containsKey(key)) {
+		Value value = map.get(key);
+		if (value == null) {
 			throw new NoSuchElementException("No value found for key: " + key);
 		}
-		return map.get(key);
+		return value;
 	}
 
 	@Override
 	public void update(Long key, Value value) throws NoSuchElementException {
 		// TODO
-		if (!map.containsKey(key)) {
-			throw new NoSuchElementException("No value found for key: " + key);
+		if (key == null || value == null) {
+			throw new NoSuchElementException("Key or value is null");
 		}
 		map.put(key, value);
 	}

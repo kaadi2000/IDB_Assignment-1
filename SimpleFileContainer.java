@@ -30,29 +30,26 @@ public class SimpleFileContainer<Value> implements Container<Long, Value> {
 		this.isOpen = false;
 		this.key = 0;
 
-		// Use reflection to create a sample instance for size estimation
-		Value sampleValue;
 		try {
-			sampleValue = (Value) serializer.getClass().getComponentType().getDeclaredConstructor().newInstance();
-			ByteBuffer buffer = ByteBuffer.allocate(1024); // Allocate a reasonable buffer size
+			ByteBuffer buffer = ByteBuffer.allocate(1024);
+			Value sampleValue = serializer.deserialize(buffer);
 			serializer.serialize(sampleValue, buffer);
-			this.estimatedEntrySize = buffer.position();  // Store the estimated size
+			this.estimatedEntrySize = 256;
 		} catch (Exception e) {
 			throw new RuntimeException("Failed to estimate serialized object size", e);
 		}
 
 	}
-	
+
 	@Override
 	public MetaData getMetaData() {
 		// TODO
 		MetaData metaData = new MetaData();
 		try {
 			if (metadataFile.length() > 0) {
-				metadataFile.seek(0);  // Start of the metadata file
+				metadataFile.seek(0);
 				int size = metadataFile.readInt();
 				long nextAvailableKey = metadataFile.readLong();
-				// Use these values internally as needed
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -80,11 +77,10 @@ public class SimpleFileContainer<Value> implements Container<Long, Value> {
 
 	@Override
 	public void close() {
-		// TODO
 		try {
 			if (metadataFile != null) {
 				metadataFile.seek(0);
-				metadataFile.writeInt((int) key); // Example of writing size
+				metadataFile.writeInt((int) key);
 				metadataFile.writeLong(key);
 				metadataFile.close();
 			}
@@ -96,7 +92,8 @@ public class SimpleFileContainer<Value> implements Container<Long, Value> {
 			e.printStackTrace();
 		}
 	}
-	
+
+
 	@Override
 	public Long reserve() throws IllegalStateException {
 		// TODO
@@ -105,25 +102,29 @@ public class SimpleFileContainer<Value> implements Container<Long, Value> {
 		}
 		return key++;
 	}
-	
+
 	@Override
 	public void update(Long key, Value value) throws NoSuchElementException {
-		// TODO
 		try {
 			long position = key * (estimatedEntrySize + 1 + Integer.BYTES);
 			dataFile.seek(position);
 
-			dataFile.writeByte(1);  // Mark as active entry
+			dataFile.writeByte(1);
 
 			ByteBuffer buffer = ByteBuffer.allocate(estimatedEntrySize);
 			serializer.serialize(value, buffer);
+			int dataLength = buffer.position();
 
-			dataFile.writeInt(buffer.position());  // Length of data
-			dataFile.write(buffer.array(), 0, buffer.position());  // Serialized data
+			buffer.flip();
+
+			dataFile.writeInt(dataLength);
+			dataFile.write(buffer.array(), 0, dataLength);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
+
+
 
 
 	@Override
@@ -149,13 +150,13 @@ public class SimpleFileContainer<Value> implements Container<Long, Value> {
 
 	@Override
 	public void remove(Long key) throws NoSuchElementException {
-		// TODO
 		try {
 			long position = key * (estimatedEntrySize + 1 + Integer.BYTES);
 			dataFile.seek(position);
-			dataFile.writeByte(0);  // Mark as deleted entry
+			dataFile.writeByte(0);
 		} catch (IOException e) {
 			throw new NoSuchElementException("Error removing data for the key");
 		}
 	}
+
 }
