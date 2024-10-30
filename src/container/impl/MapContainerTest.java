@@ -1,6 +1,5 @@
 package container.impl;
 
-import container.impl.MapContainer;
 import container.Container;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,19 +20,19 @@ public class MapContainerTest {
 
     @Test
     public void testReserveUniqueKeys() {
-        Long key1 = container.reserve();
-        Long key2 = container.reserve();
-        assertNotEquals(key1, key2, "Keys should be unique");
-        assertEquals(key1 + 1, key2, "Keys should be sequential");
+        Long token1 = container.reserve();
+        Long token2 = container.reserve();
+        assertNotEquals(token1, token2, "Each key must be unique.");
+        assertEquals(token1 + 1, token2, "Keys must follow a sequential order.");
     }
 
     @Test
     public void testBasicInsertAndRetrieve() {
         Long key = container.reserve();
-        String expectedValue = "testValue";
-        container.update(key, expectedValue);
+        String targetValue = "testValue";
+        container.update(key, targetValue);
         String retrievedValue = container.get(key);
-        assertEquals(expectedValue, retrievedValue, "Retrieved value should match the inserted value");
+        assertEquals(targetValue, retrievedValue, "Retrieved value should be same as inserted value.");
     }
 
     @Test
@@ -44,7 +43,7 @@ public class MapContainerTest {
         container.update(key, initialValue);
         container.update(key, updatedValue);
         String retrievedValue = container.get(key);
-        assertEquals(updatedValue, retrievedValue, "Retrieved value should match the updated value");
+        assertEquals(updatedValue, retrievedValue, "Retrieved value should be same as updated value.");
     }
 
     @Test
@@ -52,31 +51,31 @@ public class MapContainerTest {
         Long key = container.reserve();
         container.update(key, "testValue");
         container.remove(key);
-        assertThrows(NoSuchElementException.class, () -> container.get(key), "Removed key should not be accessible");
+        assertThrows(NoSuchElementException.class, () -> container.get(key), "Removed key should not be accessible.");
     }
 
     @Test
     public void testMetadataAccuracy() {
         MetaData metaData = container.getMetaData();
-        assertNotNull(metaData, "MetaData should not be null");
+        assertNotNull(metaData, "MetaData cannot be empty/null.");
     }
 
     @Test
     public void testPersistentStorageForFileContainer() {
         if (container instanceof SimpleFileContainer) {
             Long key = container.reserve();
-            String expectedValue = "persistentValue";
-            container.update(key, expectedValue);
-            container.close(); // Close and reopen to simulate persistence
+            String intendedValue = "persistentValue";
+            container.update(key, intendedValue);
+            container.close();
             container.open();
             String retrievedValue = container.get(key);
-            assertEquals(expectedValue, retrievedValue, "Value should persist after closing and reopening container");
+            assertEquals(intendedValue, retrievedValue, "The value should not change after the container is closed and reopened.");
         }
     }
 
     @Test
     public void testOpenAndCloseOperations() {
         container.close();
-        assertThrows(IllegalStateException.class, () -> container.reserve(), "Operations should fail when container is closed");
+        assertThrows(IllegalStateException.class, () -> container.reserve(), "Operations should be unsuccessful when the container is closed.");
     }
 }

@@ -19,7 +19,7 @@ class SimpleFileContainerTest {
     private final Path testDirectory = Paths.get("test_container");
     private final String filenamePrefix = "test";
 
-    private FixedSizeSerializer<String> serializer = new FixedSizeSerializer<>() {
+    private final FixedSizeSerializer<String> serializer = new FixedSizeSerializer<>() {
         @Override
         public void serialize(String value, ByteBuffer buffer) {
             byte[] data = value.getBytes();
@@ -71,7 +71,7 @@ class SimpleFileContainerTest {
     @Test
     void testUpdateAndGet() {
         Long key = container.reserve();
-        String value = "Hello, World!";
+        String value = "Hello World";
         container.update(key, value);
         String retrievedValue = container.get(key);
         assertEquals(value, retrievedValue);
@@ -87,7 +87,7 @@ class SimpleFileContainerTest {
     @Test
     void testRemove() {
         Long key = container.reserve();
-        container.update(key, "To Be Removed");
+        container.update(key, "Needs to Be Removed.");
         container.remove(key);
         assertThrows(NoSuchElementException.class, () -> container.get(key));
     }
@@ -101,13 +101,13 @@ class SimpleFileContainerTest {
     @Test
     void testCloseAndOpen() {
         Long key = container.reserve();
-        container.update(key, "Persistent Data");
+        container.update(key, "Repeating Data.");
         container.close();
 
         SimpleFileContainer<String> newContainer = new SimpleFileContainer<>(testDirectory, filenamePrefix, serializer);
         newContainer.open();
         String retrievedValue = newContainer.get(key);
-        assertEquals("Persistent Data", retrievedValue);
+        assertEquals("Repeating Data.", retrievedValue);
         newContainer.close();
     }
 }
